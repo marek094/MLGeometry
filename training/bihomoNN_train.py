@@ -12,6 +12,7 @@ import sympy as sp
 import time
 import math
 import argparse
+from pathlib import Path
 
 import MLGeometry as mlg
 from models import *
@@ -130,9 +131,9 @@ func_dict = {"weighted_MAPE": mlg.loss.weighted_MAPE, "weighted_MSE": mlg.loss.w
 loss_func = func_dict[args.loss_func]
 #early_stopping = False
 clip_threshold = args.clip_threshold
-save_dir = args.save_dir
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
+save_dir = Path(args.save_dir)
+if not save_dir.exists():
+    save_dir.mkdir(parents=True)
 save_name = args.save_name
 
 @tf.function
@@ -197,10 +198,10 @@ else:
         optimizer = tf.keras.optimizers.Adam(learning_rate=lr_schedule)
         #optimizer = tf.keras.optimizers.Adam(learning_rate=args.learning_rate)
 
-    train_log_dir = save_dir + '/logs/' + save_name + '/train'
-    test_log_dir = save_dir + '/logs/' + save_name + '/test'
-    train_summary_writer = tf.summary.create_file_writer(train_log_dir)
-    test_summary_writer = tf.summary.create_file_writer(test_log_dir)
+    train_log_dir = save_dir / 'logs' / save_name / 'train'
+    test_log_dir = save_dir / 'logs' / save_name / 'test'
+    train_summary_writer = tf.summary.create_file_writer(str(train_log_dir))
+    test_summary_writer = tf.summary.create_file_writer(str(test_log_dir))
 
     stop = False
     loss_old = 100000
@@ -264,7 +265,7 @@ else:
 
 train_time = time.time() - start_time
 
-model.save(save_dir + '/' + save_name)
+model.save(save_dir / save_name)
 
 sigma_train = cal_total_loss(train_set, mlg.loss.weighted_MAPE) 
 sigma_test = cal_total_loss(test_set, mlg.loss.weighted_MAPE) 
@@ -303,7 +304,7 @@ delta_E_test = math.sqrt(cal_total_loss(test_set, delta_E_square_test) / HS.n_po
 #####################################################################
 # Write to file
 
-with open(save_dir + save_name + ".txt", "w") as f:
+with open(save_dir / save_name / ".txt", "w") as f:
     f.write('[Results] \n')
     f.write('model_name = {} \n'.format(save_name))
     f.write('seed = {} \n'.format(seed))
@@ -335,7 +336,7 @@ with open(save_dir + save_name + ".txt", "w") as f:
     f.write('sigma_max_train = {:.6g} \n'.format(sigma_max_train))
     f.write('sigma_max_test = {:.6g} \n'.format(sigma_max_test))
 
-with open(save_dir + "summary.txt", "a") as f:
+with open(save_dir / "summary.txt", "a") as f:
     if args.function == 'f0':  
         f.write('{} {} {} {:.6g} {:.6g} {:.6g} {:.6g} {:.6g} {:.6g} {:.6g}\n'.format(save_name, args.function, psi, train_time, sigma_train, sigma_test, E_train, E_test, sigma_max_train, sigma_max_test))
     elif args.function == 'f1':  
