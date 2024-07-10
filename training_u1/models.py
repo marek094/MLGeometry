@@ -34,7 +34,6 @@ class u1_model_relu(tf.keras.Model):
     def call(self, inputs):
         x = self.u1_layer(inputs)
         x = self.outer_layers(x)
-        x = tf.math.log(x)
         return x
 
 
@@ -67,5 +66,4 @@ class u1_model_tanh(tf.keras.Model):
     def call(self, inputs):
         x = self.u1_layer(inputs)
         x = self.outer_layers(x)
-        x = tf.math.log(x)
         return x
